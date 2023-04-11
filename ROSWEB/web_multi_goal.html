@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>多目標路經規劃</title>
+    <link rel="stylesheet" href="css/multi_goals.css" />
+    <link rel="stylesheet" href="css/global.css" />
+    <meta charset="utf-8" />
+    <!-- IE将使用最新的引擎渲染网页 -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <!-- 页面的宽度与设备屏幕的宽度一致
+      初始缩放比例 1:1 -->
+    <!-- <meta name="viewport" content="width=device-width, initial-scale=1"> -->
+
+    <!-- 第三方库 -->
+    <script src="lib/easeljs.js"></script>
+    <script src="lib/eventemitter2.js"></script>
+    <script src="lib/roslib.js"></script>
+    <script src="lib/ros2d.js"></script>
+
+    <!-- 重构图形库 -->
+    <script src="src/RosCanvas.js"></script>
+    <script src="src/shape/goalPoint.js"></script>
+    <script src="src/shape/pointCloud.js"></script>
+    <script src="src/shape/NavigationArrow.js"></script>
+
+    <!-- Nav相关操作重构 -->
+    <script src="src/Nav.js"></script>
+    <script src="src/nav/ClientNav.js"></script>
+    <!-- revised -->
+    <script src="src/nav/Navigator_multi_point.js"></script>
+    <script src="src/nav/NavController.js"></script>
+
+    <!-- SCAN 重构地图 -->
+    <script src="src/Scan.js"></script>
+
+    <!-- demo对应js脚本 -->
+    <!-- Turtlebot -->
+    <!-- NewEraAI -->
+    <script src="src/index_multi_goal.js"></script>
+
+    <!-- CSS-->
+</head>
+
+<body>
+    <header>
+        <h1>多目標路徑規劃</h1>
+    </header>
+
+    <h3>連線:</h3>
+    <div class="connect_box">
+        <p class="url_text">URL: <input class="url_text_1" type="text" value="ws://192.168.0.1:9090" id="URL" />
+            <script>
+                document.getElementById("URL").value = "ws://" + window.location.host + ":9090"
+            </script>
+            <button class="url_connect" onclick="connect()"><strong>連接</strong></button>
+        </p>
+
+        <div id="statusIndicator">
+            <p id="connecting">
+                Connecting to ROS(robot)...
+            </p>
+            <p id="connected" style="color:#00D600; display:none">
+                已連接!
+            </p>
+            <p id="error" style="color:#FF0000; display:none">
+                未連接!
+            </p>
+            <p id="closed" style="display:none">
+                連接已關閉.
+            </p>
+        </div>
+    </div>
+
+    <!--buttom-->
+    <h3>指令:</h3>
+    <div class="cmd">
+        <input class="one" type="button" value="開啟相機"
+            onclick="fetch('http://'+window.location.host+':8082/runCameraNodeAndArduinoRosNode').then((response) => response.text()).then((data) => alert(data));" />
+        <input class="one" type="button" value="開啟人員偵測"
+            onclick="fetch('http://'+window.location.host+':8082/runDockerYolov4').then((response) => response.text()).then((data) => alert(data));" />
+
+        <input class="one" type="button" value="開啟自動充電"
+            onclick="fetch('http://'+window.location.host+':8082/runAutoChargeServer').then((response) => response.text()).then((data) => alert(data));" />
+        <input class="text1" type="hidden" id="command" value="#" />
+        <input class="one" type="button" value="清除目標點" id="return_step" />
+        <input class="text1" type="hidden" id="command" value="#" />
+        <input class="one" type="button" value="傳送目標點" id="send_goals" data-value=""
+            onclick="fetch('http://'+window.location.host+':8082/sendMultiGoals?'+this.getAttribute('data-value').slice(1,)).then((response) => response.text()).then((data) => alert(data));" />
+    </div>
+
+    <!--table-->
+    <!-- <table id="mytable">
+            <tr>
+                <td>content</td>
+            </tr>
+
+        </table> -->
+
+    <!--Show map part-->
+    <h3>地圖:</h3>
+    <div style="margin: 10px 5vw;" id="nav"></div>
+    <!-- container end -->
+    <h4>記錄點</h4>
+    <div class="log_table" id="log_table" style="position: relative;">
+        <table>
+            <thead style="background-color: #ddd;">
+                <tr style="background-color: #ddd;">
+                    <th style="min-width: 80px;">point</th>
+                    <th style="min-width: 80px;">x</th>
+                    <th style="min-width: 80px;">y</th>
+                    <th style="min-width: 80px;">orientation</th>
+                    <th style="min-width: 80px;">sec</th>
+                </tr>
+            </thead>
+            <tbody id="log" style="text-align: center;">
+            </tbody>
+        </table>
+    </div>
+
+</body>
+
+</html>

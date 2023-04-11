@@ -1,0 +1,203 @@
+<!-- 下拉式選單 -->
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <!-- 页面的宽度与设备屏幕的宽度一致初始缩放比例 1:1 -->
+  <!-- <meta name="viewport" content="width=device-width, initial-scale=1"> -->
+  <title>NewEraAI</title>
+
+  <!-- <script src="https://frogcat.github.io/canvas-arrow/canvas-arrow.js"></script> -->
+  <script type="text/javascript" src="http://static.robotwebtools.org/roslibjs/current/roslib.min.js"></script>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.7.3/nipplejs.js"></script>
+
+  <script type="text/javascript" type="text/javascript">
+    // Connect to ROS.
+    var ros = new ROSLIB.Ros({
+      url: 'ws://localhost:9090'
+    });
+
+    ros.on('connection', function () {
+      document.getElementById('connecting').style.display = 'none';
+      document.getElementById('error').style.display = 'none';
+      document.getElementById('closed').style.display = 'none';
+      document.getElementById('connected').style.display = 'inline';
+      console.log('Connected to websocket server.');
+    });
+
+    ros.on('error', function (error) {
+      document.getElementById('connecting').style.display = 'none';
+      document.getElementById('connected').style.display = 'none';
+      document.getElementById('closed').style.display = 'none';
+      document.getElementById('error').style.display = 'inline';
+      console.log('Error connecting to websocket server: ', error);
+    });
+
+    ros.on('close', function () {
+      document.getElementById('connecting').style.display = 'none';
+      document.getElementById('connected').style.display = 'none';
+      document.getElementById('closed').style.display = 'inline';
+      console.log('Connection to websocket server closed.');
+    });
+
+    // Create a connection to the rosbridge WebSocket server.
+    function connect() {
+      var urls = document.getElementById("URL").value;
+      // alert(urls)//'ws://localhost:9090'
+      ros.connect(urls);
+    }
+
+    var txt_listener = new ROSLIB.Topic({
+      ros: ros,
+      name: '/txt_msg',
+      messageType: 'std_msgs/String'
+    });
+
+    txt_listener.subscribe(function (m) {
+      document.getElementById("msg").innerHTML = m.data;
+      move(1, 0);
+    });
+
+    cmd_vel_listener = new ROSLIB.Topic({
+      ros: ros,
+      name: '/joystick_set_velocity',
+      messageType: 'geometry_msgs/Twist'
+    });
+
+    move = function (linear, angular) {
+      var twist = new ROSLIB.Message({
+        linear: {
+          x: linear,
+          y: 0,
+          z: 0
+        },
+        angular: {
+          x: 0,
+          y: 0,
+          z: angular
+        }
+      });
+      cmd_vel_listener.publish(twist);
+    }
+
+    createJoystick = function () {
+      var options = {
+        zone: document.getElementById('zone_joystick'),
+        threshold: 0.1,
+        position: { left: 170 + '%' }, // joystick position
+        mode: 'static',
+        size: 250,
+        color: '#000000',
+      };
+      manager = nipplejs.create(options); // create nipplejs
+
+      linear_speed = 0;
+      angular_speed = 0;
+
+      manager.on('start', function (event, nipple) {
+        timer = setInterval(function () {
+          move(linear_speed, angular_speed);
+        }, 25);
+      });
+
+      manager.on('move', function (event, nipple) {
+        max_linear = 0.5; // m/s
+        max_angular = 4.0; // rad/s
+        max_distance = 75.0; // pixels;
+        linear_speed = Math.sin(nipple.angle.radian) * max_linear * nipple.distance / max_distance; //v
+        angular_speed = -Math.cos(nipple.angle.radian) * max_angular * nipple.distance / max_distance; //w
+
+      });
+
+      manager.on('end', function () {
+        if (timer) {
+          clearInterval(timer);
+        }
+        self.move(0, 0);
+      });
+    }
+    // window onload type
+    window.onload = function () {
+      createJoystick();
+    }
+
+  </script>
+</head>
+
+<link href="css/test_front.css" rel="stylesheet">
+<!--css-->
+
+<body>
+  <div style="text-align:center;">
+    <h1 class="title_box">NewEraAI </h1>
+  </div>
+  <div class="connect_box">
+    <p class="url_text">URL: <input class="url_text_1" type="text" value="ws://192.168.10.30:9090" id="URL" />
+      <button class="url_connect" onclick="connect()"><strong>Connect</strong></button>
+    </p>
+
+    <div id="statusIndicator">
+      <p id="connecting">
+        Connecting to ROS(robot)...
+      </p>
+      <p id="connected" style="color:#00D600; display:none">
+        Connected!
+      </p>
+      <p id="error" style="color:#FF0000; display:none">
+        Error in the backend!
+      </p>
+      <p id="closed" style="display:none">
+        Connection closed.
+      </p>
+    </div>
+
+    <div class="select_box">
+      <!--選單一-->
+      <!-- <select onChange="location = this.options[this.selectedIndex].value;"> -->
+      <select onfocus="val()" id="select_id">
+        <option value="#">請選擇</option>
+        <option value="http://192.168.0.134/RosNavJs/public/examples/demo.html">Run Gmapping</option>
+        <option value="http://192.168.0.134/RosNavJs/public/examples/demo.html">Run Navigation</option>
+      </select>
+      <script type="text/javascript">
+        function val() {
+          // d = document.getElementById("select_id").value;
+          d = document.getElementById("select_id");
+          var opt = document.createElement('option');
+          opt.value = "newww";
+          opt.innerHTML = "inner";
+          d.appendChild(opt);
+          // alert(d);
+        }
+      </script>
+    </div>
+
+    <ul class="select_box1">
+      <!--選單二-->
+      <li><a href="http://192.168.0.134/RosNavJs/public/examples/demo.html" title="Run Gmapping">Run Gmapping</a></li>
+      <li><a href="http://192.168.0.134/RosNavJs/public/examples/demo.html" title="Run Navigation">Run Navigation</a>
+      </li>
+    </ul>
+    <!-- <p>Connection status: <span id="status"></span></p>
+  <p>Last message on /txt_msg: <span id="msg"></span></p> -->
+    <div id="zone_joystick" style="position: relative;"></div>
+
+    <div class="cmd">
+      <p>Control panel:</p>
+    </div>
+
+    <div class="mapping_box">
+      <!--startmap-->
+      <button class="button_1" onclick="startmap()"><strong>Start Mapping</strong></button>
+    </div>
+
+    <h1>mouse draw on images</h1>
+    <button id="btn3">Creat Map</button><br>
+    <button id="return_step">Clear Point Value</button><br>
+    <button id=" send_goal">Send Goal</button><br>
+    <canvas id="canvas3" width="400" height="400"></canvas>
+    <script src="src/canvas_draw.js"></script>
+</body>
+
+</html>

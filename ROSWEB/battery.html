@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>battery for computer</title>
+    <link rel="stylesheet" href="css/battery.css">
+</head>
+
+<body>
+    <!--主题-->
+    <!-- <section class="sec"> -->
+    <!--主题方格-->
+    <div class="box">
+        <!--方格中央-->
+        <div class="content">
+            <!-- <h3>Battery</h3> -->
+            <!--电池外方格-->
+            <div class="batteryShape">
+                <!--电池内部阴影-->
+                <div class="level">
+                    <!--电池显示效果-->
+                    <div class="percentage">
+
+                    </div>
+                </div>
+            </div>
+            <!--电池电量显示-->
+            <div class="percent">
+                50%
+            </div>
+            <!--是否在充电-->
+            <p class="batteryTime">充電狀態</p>
+
+        </div>
+    </div>
+    <!-- </section> -->
+    <script type="text/javascript">
+        // 获取电池显示效果与电池电量显示
+        // var battery_listener = new ROSLIB.Topic({
+        //     ros: ros,
+        //     name: '/battery',
+        //     messageType: 'sensor_msgs/BatteryState'
+        // });
+
+        // var BatteryState = new ROSLIB.Message({
+        //     BatteryState: {
+        //         persentage: 0
+        //     }
+        // });//create message
+        // battery_listener.publish(BatteryState);
+
+        var pt = document.querySelector('.percentage');
+        var p = document.querySelector('.percent');
+
+        //获取电池状态
+        navigator.getBattery().then(function (battery) {
+
+            // 是否正在充电，yes-充电
+            console.log("Battery charging? " + (battery.charging ? "yes" : "no"));
+
+            // 当前剩余电量
+            console.log("Battery level: " + battery.level * 100 + "%");
+
+            //初始化电量
+            pt.style.width = battery.level * 100 + "%";
+            p.innerHTML = battery.level * 100 + "%"
+            //监听电量变化
+            battery.addEventListener("levelchange", function (e) {
+                console.log("电量水平变化: ", battery.level);
+                pt.style.width = battery.level * 100 + "%";
+                p.innerHTML = battery.level * 100 + "%"
+            }, false);
+
+
+            //初始化电池状态变化
+            var charging = battery.charging ? "yes" : "no";
+            if (charging === "yes") {
+                document.querySelector('.batteryTime').innerHTML = '正在充電';
+            } else {
+                document.querySelector('.batteryTime').innerHTML = '未在充電';
+            }
+            //监听电池充电状态变化
+            battery.addEventListener("chargingchange", function (e) {
+                console.warn("电池充电状态变化: ", battery.charging);
+                var cd = battery.charging ? 'yes' : 'no';
+                if (cd == 'yes') {
+                    document.getElementsByClassName('batteryTime')[0].innerHTML = '正在充电';
+                } else {
+                    document.getElementsByClassName('batteryTime')[0].innerHTML = '未在充电';
+                }
+            }, false);
+        });
+    </script>
+
+</body>
+
+</html>

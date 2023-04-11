@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <title>操控</title>
+    <link rel="stylesheet" href="css/global.css" />
+    <link rel="stylesheet" href="css/control.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!--camera-->
+    <script type="text/javascript"
+        src="http://static.robotwebtools.org/EventEmitter2/current/eventemitter2.min.js"></script>
+    <!--mjpegcanvasjs-->
+    <script type="text/javascript"
+        src="http://static.robotwebtools.org/mjpegcanvasjs/current/mjpegcanvas.min.js"></script>
+    <!--ros suite-->
+    <script type="text/javascript" src="http://static.robotwebtools.org/roslibjs/current/roslib.min.js"></script>
+    <!--joystickjs-->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.7.3/nipplejs.js"></script>
+
+    <!--require-->
+    <!-- <script type="text/javascript"
+        src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script> -->
+
+    <!-- <script src="../src/joystick_test.js"></script> -->
+
+    <script type="text/javascript">
+        // Connecting to ROS--------------------------
+        var ros = new ROSLIB.Ros({ url: 'ws://localhost:9090' });
+
+        ros.on('connection', function () {
+            document.getElementById('connecting').style.display = 'none';
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('closed').style.display = 'none';
+            document.getElementById('connected').style.display = 'inline';
+            console.log('Connected to websocket server.');
+        });
+
+        ros.on('error', function (error) {
+            document.getElementById('connecting').style.display = 'none';
+            document.getElementById('connected').style.display = 'none';
+            document.getElementById('closed').style.display = 'none';
+            document.getElementById('error').style.display = 'inline';
+            console.log('Error connecting to websocket server: ', error);
+        });
+
+        ros.on('close', function () {
+            document.getElementById('connecting').style.display = 'none';
+            document.getElementById('connected').style.display = 'none';
+            document.getElementById('closed').style.display = 'inline';
+            console.log('Connection to websocket server closed.');
+        });
+
+        // Create a connection to the rosbridge WebSocket server.
+        function connect() {
+            var urls = document.getElementById("URL").value;
+            // alert(urls)//'ws://localhost:9090'
+            ros.connect(urls);
+        }
+
+        // get battery info----------------------------
+        // var pt = document.querySelector('.percentages');
+
+        var battery_listener = new ROSLIB.Topic({
+            ros: ros,
+            name: '/battery',
+            messageType: 'sensor_msgs/BatteryState'
+        });
+
+        battery_listener.subscribe(function (m) {
+            document.getElementById("msg").innerHTML = m.percentage.toFixed(2) * 100 + "%";
+            document.getElementById("batteryPer").style.width = m.percentage.toFixed(2) * 100 + "%";
+            // pt.style.width = m.percentage.toFixed(2) * 100 + "%"
+        });
+        //-------------------------------------------------
+
+        function showview() {
+            // Create the main viewer.(camera)
+            var viewer1 = new MJPEGCANVAS.Viewer({
+                divID: 'camera',
+                host: '192.168.0.2',  //laptop ip
+                width: 1024,
+                height: 768,
+                // topic: '/cv_camera/image_raw'
+                topic: '/camera_info'
+            });
+        }
+
+        // Joystick_js--------------------------------------------------------------start
+        cmd_vel_listener = new ROSLIB.Topic({
+            ros: ros,
+            name: '/joystick_set_velocity',
+            messageType: 'geometry_msgs/Twist'
+        });
+
+        move = function (linear, angular) {
+            var twist = new ROSLIB.Message({
+                linear: {
+                    x: linear,
+                    y: 0,
+                    z: 0
+                },
+                angular: {
+                    x: 0,
+                    y: 0,
+                    z: angular
+                }
+            });
+            cmd_vel_listener.publish(twist);
+        }
+
+        createJoystick = function () {
+            var options = {
+                zone: document.getElementById('zone_joystick'),
+                threshold: 0.1,
+                position: { top: '200px', left: '200px' }, // joystick position
+                mode: 'static',
+                size: 350,
+                color: '#000000',
+            };
+            manager = nipplejs.create(options); // create nipplejs
+
+            linear_speed = 0;
+            angular_speed = 0;
+
+            manager.on('start', function (event, nipple) {
+                timer = setInterval(function () {
+                    move(linear_speed, angular_speed);
+                }, 25);
+            });
+
+            manager.on('move', function (event, nipple) {
+                max_linear = 0.15; // m/s
+                max_angular = 8.0; // rad/s
+                max_distance = 100.0; // pixels;
+                linear_speed = Math.sin(nipple.angle.radian) * max_linear * nipple.distance / max_distance; //v
+                angular_speed = -Math.cos(nipple.angle.radian) * max_angular * nipple.distance / max_distance; //w
+
+            });
+
+            manager.on('end', function () {
+                if (timer) {
+                    clearInterval(timer);
+                }
+                self.move(0, 0);
+            });
+        }
+
+        // to solve both canera and joystick
+        // if (window.addEventListener) {
+        //     // DOM2 standard
+        //     window.addEventListener("load", createJoystick(), false);
+        // }
+        // else if (window.attachEvent) {
+        //     // Microsoft's precursor to it, IE8 and earlier
+        //     window.attachEvent("onload", createJoystick());
+        // }
+        // else {
+        //     // Some pre-1999 browser
+        //     window.onload = createJoystick();
+        // }
+        // joystick_js end
+
+        // show all on window
+        window.onload = function () {
+            createJoystick();
+            showview()
+        }
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r121/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.net.min.js"></script>
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            VANTA.NET({
+                el: "#vanta",
+                mouseControls: true,
+                touchControls: true,
+                gyroControls: false,
+                minHeight: 200.00,
+                minWidth: 200.00,
+                scale: 1.00,
+                scaleMobile: 1.00,
+                color: 0x3fe8ff,
+                backgroundColor: 0x15273c,
+                points: 9.00,
+                maxDistance: 22.00,
+                spacing: 20.00
+            })
+        })
+
+    </script>
+</head>
+
+<body>
+    <!-- <div id="vanta" style="z-index: -1;"></div> -->
+    <header>
+        <h1>操控</h1>
+    </header>
+
+    <div class="box">
+        <div class="content">
+            <!--電池外方格-->
+            <div class="batteryShape">
+                <!--內部陰影-->
+                <div class="level">
+                    <!--顯示效果-->
+                    <div class="percentages" id="batteryPer">
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- battery msg-->
+            <p style=" font-size: 1.5em;">
+                電量:
+                <span id="msg"></span>
+            </p>
+
+        </div>
+    </div>
+
+    <h3>連線:</h3>
+    <div class="connect_box">
+        <p class="url_text">URL: <input class="url_text_1" type="text" id="URL" />
+            <script>
+                document.getElementById("URL").value = "ws://" + window.location.host + ":9090"
+            </script>
+            <button class="url_connect" onclick="connect()"><strong>連接</strong></button>
+        </p>
+
+        <div id="statusIndicator">
+            <p id="connecting">
+                Connecting to ROS(robot)...
+            </p>
+            <p id="connected" style="color:#00D600; display:none">
+                已連接!
+            </p>
+            <p id="error" style="color:#FF0000; display:none">
+                未連接!
+            </p>
+            <p id="closed" style="display:none">
+                連接已關閉.
+            </p>
+        </div>
+    </div>
+
+    <h3>指令:</h3>
+    <div class="cmd">
+        <!-- <input class="text1" type="hidden" id="command" value="source ssh_bash/ros_control.bash" /> -->
+        <input class="one" type="button" value="開啟操控"
+            onclick="fetch('http://'+window.location.host+':8082/startControl').then((response) => response.text()).then((data) => alert(data));" />
+        <!-- <input class="text1" type="hidden" id="command" value="source ssh_bash/close_roscore.bash" /> -->
+        <input class="one" type="button" value="關閉操控"
+            onclick="fetch('http://'+window.location.host+':8082/stopControl').then((response) => response.text()).then((data) => alert(data));" />
+        <!-- <input class="text1" type="hidden" id="command" value="#" />
+        <input class="one" type="button" value="開啟相機" onclick="open_cam();" /> -->
+        <!-- http://192.168.0.2/RosNavJs/public/examples/test_rossrv.html -->
+        <!-- type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" -->
+    </div>
+
+    <!-- <div class="temp_box"> -->
+    <h3>相機:</h3>
+    <div class="camera_box" id="camera1">
+        <img id="video" style="width: 100%; height: 100%;">
+        <script>
+            document.getElementById("video").src = "http://" + window.location.host + ":8082/video";
+        </script>
+    </div>
+
+    <h4>操控:</h4>
+    <div class="joy_box" id="zone_joystick" style="position: relative;"></div>
+    <!-- </div> -->
+
+</body>
+
+</html>

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>建圖</title>
+    <link rel="stylesheet" href="css/global.css" />
+    <link rel="stylesheet" href="css/Build_map.css" />
+    <!-- IE将使用最新的引擎渲染网页 -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!--ssh-->
+    <!-- <script src="https://code.jquery.com/jquery-3.6.0.js"
+        integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous">
+        </script> -->
+
+    <!--camera-->
+    <script type="text/javascript"
+        src="http://static.robotwebtools.org/EventEmitter2/current/eventemitter2.min.js"></script>
+    <!--mjpegcanvasjs-->
+    <script type="text/javascript"
+        src="http://static.robotwebtools.org/mjpegcanvasjs/current/mjpegcanvas.min.js"></script>
+
+    <!--joystick-->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.7.3/nipplejs.js"></script>
+
+    <!-- 第三方库 -->
+    <script src="lib/easeljs.js"></script>
+    <script src="lib/eventemitter2.js"></script>
+    <script src="lib/roslib.js"></script>
+    <script src="lib/ros2d.js"></script>
+
+    <!-- 重构图形库 -->
+    <script src="src/RosCanvas.js"></script>
+    <script src="src/shape/goalPoint.js"></script>
+    <script src="src/shape/pointCloud.js"></script>
+    <script src="src/shape/NavigationArrow.js"></script>
+
+    <!-- Nav相关操作重构 -->
+    <script src="src/Nav.js"></script>
+    <script src="src/nav/ClientNav.js"></script>
+    <script src="src/nav/Navigator.js"></script>
+    <script src="src/nav/NavController.js"></script>
+
+    <!-- SCAN 重构地图 -->
+    <script src="src/Scan.js"></script>
+
+    <!-- demo对应js脚本 -->
+    <!-- Turtlebot -->
+    <!-- NewEraAI -->
+    <script src="src/index.js"></script>
+</head>
+
+<body>
+    <!--onload="init()"-->
+    <header>
+        <h1>建圖</h1>
+    </header>
+
+    <!--battery-->
+    <div class="box">
+        <div class="content">
+            <!--電池外方格-->
+            <div class="batteryShape">
+                <!--內部陰影-->
+                <div class="level">
+                    <!--顯示效果-->
+                    <div class="percentages" id="batteryPer">
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- battery msg-->
+            <p style=" font-size: 1.5em;">
+                電量:
+                <span id="msg"></span>
+            </p>
+
+        </div>
+    </div>
+
+    <div class="auto-flex-container">
+        <div style="margin-right: 3vw;">
+            <!--connect ros-->
+            <h3>連線:</h3>
+            <div class="connect_box">
+                <p class="url_text">URL: <input class="url_text_1" type="text" id="URL" />
+                    <script>
+                        document.getElementById("URL").value = "ws://"+window.location.host+":9090"
+                    </script>
+                    <button class="url_connect" onclick="connect()"><strong>連接</strong></button>
+                </p>
+
+                <div id="statusIndicator">
+                    <p id="connecting">
+                        Connecting to ROS(robot)...
+                    </p>
+                    <p id="connected" style="color:#00D600; display:none">
+                        已連接!
+                    </p>
+                    <p id="error" style="color:#FF0000; display:none">
+                        未連接!
+                    </p>
+                    <p id="closed" style="display:none">
+                        連接已關閉.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div>
+
+            <!--Save map part-->
+            <h3>地圖命名:</h3>
+            <div class="connect_box" style="max-width: 400px">
+                <p class="map_text">地圖名: <input class="map_path" type="text" value="your name" id="map_path" />
+                    <button class="box_save_map"
+                        onclick="var name = document.getElementById('map_path').value; fetch('http://'+window.location.host+':8082/buildMap?map_name='+name).then((response) => response.text()).then((data) => alert(data));"><strong>儲存地圖</strong></button>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!--ssh buttom-->
+    <h3>指令:</h3>
+    <div class="cmd">
+        <input class="text1" type="hidden" id="command" value="source ssh_bash/ros_control_laser.bash" />
+        <input class="one" type="button" value="開啟建圖"
+            onclick="fetch('http://'+window.location.host+':8082/startControlLaser').then((response) => response.text()).then((data) => alert(data));" />
+        <!-- <input class="text1" type="hidden" id="command" value="source ssh_bash/gmapping.bash" /> -->
+        <input class="one" type="button" value="顯示機器人位置"
+            onclick="fetch('http://'+window.location.host+':8082/showRobotPose').then((response) => response.text()).then((data) => alert(data));" />
+        <input class="one" type="button" value="關閉建圖"
+            onclick="fetch('http://'+window.location.host+':8082/stopBuildMap').then((response) => response.text()).then((data) => alert(data));" />
+        <!-- <input class="text1" type="hidden" id="command" value="#" /> -->
+        <!-- <input class="one" type="button" value="開啟相機" onclick="send();" /> -->
+        <!-- <input class="text1" type="text" id="command" value="source ssh_bash/base_connect.bash" />
+        <input class="one" type="button" value="開啟底盤" onclick="send();" />
+        <input class="text1" type="text" id="command" value="source ssh_bash/joystick.bash" />
+        <input class="one" type="button" value="開啟遙控" onclick="send();" />
+        <input class="text1" type="text" id="command" value="source ssh_bash/scan_start.bash" />
+        <input class="one" type="button" value="開啟雷射" onclick="send();" />
+        <input class="text1" type="text" id="command" value="source ssh_bash/mapping_start.bash" />
+        <input class="one" type="button" value="開啟建圖" onclick="send();" /> -->
+    </div>
+
+    <h3>地圖:</h4>
+        <div style="margin: 10px 5vw;" id="nav"></div>
+
+        <h3 style="margin-left: 7vw; display: none;">相機:</h3>
+        <div style="margin-left: 7vw; display: none;" class="camera_box" id="camera"></div>
+
+
+        <h4>操控:</h4>
+        <div class="joy_box" id="zone_joystick" style="position: relative;"></div>
+
+</body>
+
+</html>

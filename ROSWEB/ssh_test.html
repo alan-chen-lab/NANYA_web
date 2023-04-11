@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+
+<head>>
+    <meta charset="UTF-8" />
+    <title>SSH_test</title>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.js"
+        integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous">
+        </script>
+
+
+</head>
+
+<body>
+    <h1>SSh_test</h1>
+    <input type="text" id="command" />
+    <input type="button" value="測試指令" onclick="send();" />
+    <Script>
+        function send() {
+            $.ajax({
+                url: "http://localhost:8082/ssh_host",
+                method: "post",
+                contentType: "application/json",
+                Async: true,
+                dataType: "json",
+                data: JSON.stringify({ "ip": "192.168.0.1", "port": 22, "account": "c01", "password": "NewEraAI", "command": document.getElementById('command').value }),
+                success: function (res) {
+                    alert(res.result);
+                }
+            });
+        }
+    </Script>
+</body>
+
+</html>
