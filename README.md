@@ -14,3 +14,14 @@ git clone 並移至 /var/www/html下
 2. 若此時無須開啟人員偵測功能： go run main.go，若需要開啟則： go run main_non_camera_ver.go
 3. 機器人重開機時需先將相機USB拔掉，等開機後在插上，以確保機器人能成功讀到正確的相機.
 ```
+## Introduction
+
+### 首頁： index.html
+
+### 操控： control.html
+
+### 建圖： Mapping.html
+
+### 導航： navigation.html
+
+### 多點導航： web_multi_goal.html
