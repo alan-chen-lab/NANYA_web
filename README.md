@@ -1,4 +1,4 @@
-## NAYA_web
+## NANYA_web
 
 ### Step 1 : install apache
 ```
