@@ -18,12 +18,21 @@ git clone 並移至 /var/www/html下
 
 ### 首頁： index.html
 
-![screen](/Picture web/首頁.png)
+![screen](/Picture_web/首頁.png)
 
 ### 操控： control.html
 
+![screen](/Picture_web/操控.png)
+
 ### 建圖： Mapping.html
+
+![screen](/Picture_web/建圖1.png)
 
 ### 導航： navigation.html
 
+![screen](/Picture_web/導航1.png)
+
 ### 多點導航： web_multi_goal.html
+
+![screen](/Picture_web/多點導航1.png)
+![screen](/Picture_web/多點導航2.png)
