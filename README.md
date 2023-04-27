@@ -27,11 +27,11 @@ git clone https://github.com/alan-chen-lab/NANYA_web.git
 
 ### 建圖： Mapping.html
 
-![screen](/Picture_web/建圖1.png)
+![screen](/Picture_web/建圖1.png)![screen](/Picture_web/建圖2.png)
 
 ### 導航： navigation.html
 
-![screen](/Picture_web/導航1.png)
+![screen](/Picture_web/導航1.png)![screen](/Picture_web/導航2.png)
 
 ### 多點導航： web_multi_goal.html
 
