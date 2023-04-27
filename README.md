@@ -7,9 +7,8 @@ sudo apt-get install apache2
 ### step 2
 ```
 git clone https://github.com/alan-chen-lab/NANYA_web.git
-
-並移至 /var/www/html下
 ```
+並移至 /var/www/html下
 ### 注意事項
 ```
 1. 需先在機器人的終端機(terminal)開啟.go檔，即 cd naya_navigation/src/M03_navigation && go run main.go or go run main_non_camera_ver.go，否則網頁無法與機器人連線
