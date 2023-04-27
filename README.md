@@ -6,7 +6,9 @@ sudo apt-get install apache2
 ```
 ### step 2
 ```
-git clone 並移至 /var/www/html下
+git clone https://github.com/alan-chen-lab/NANYA_web.git
+
+並移至 /var/www/html下
 ```
 ### 注意事項
 ```
