@@ -18,6 +18,8 @@ git clone 並移至 /var/www/html下
 
 ### 首頁： index.html
 
+![screen](/Picture web/首頁.png)
+
 ### 操控： control.html
 
 ### 建圖： Mapping.html
