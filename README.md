@@ -1,6 +1,7 @@
 ## NANYA_web
 
-Video: [Demo](https://drive.google.com/drive/folders/1_u_Q_DZNrWIzYPTW8-vnh6MUWNSiaqDO?usp=share_link)
+Video: [Demo1](https://drive.google.com/drive/folders/1_u_Q_DZNrWIzYPTW8-vnh6MUWNSiaqDO?usp=share_link)
+[Demo2](https://drive.google.com/drive/folders/1EKUcJUFuRsCjh9Z3tdxxzWfXQkr_FJov?usp=share_link)
 
 ### Step 1 : install apache
 ```
